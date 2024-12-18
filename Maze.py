@@ -6,16 +6,16 @@ from queue import Queue
 pygame.init()
 
 # Kích thước màn hình
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600  # Chiều rộng và chiều cao của màn hình (đơn vị pixel)
-CELL_SIZE = 40  # Kích thước của mỗi ô lưới (được dùng để xác định kích thước của mê cung và nhân vật)
+SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600 
+CELL_SIZE = 40  
 
 # Màu sắc cho việc vẽ
-WHITE = (255, 255, 255)  # Màu trắng (dùng để vẽ đường đi trong mê cung)
-BLACK = (0, 0, 0)        # Màu đen (dùng để vẽ các bức tường trong mê cung)
-GREEN = (0, 255, 0)      # Màu xanh lá (dùng để vẽ thông báo chiến thắng)
-RED = (255, 0, 0)        # Màu đỏ (dùng để vẽ thông báo "Game Over")
-BLUE = (0, 0, 255)       # Màu xanh dương (dùng để vẽ con quái vật)
-PINK = (255, 105, 180)   # Màu hồng (dùng để vẽ nhân vật người chơi)
+BLACK = (0, 0, 0)       
+WHITE = (255, 255, 255) 
+GREEN = (0, 255, 0)      
+RED = (255, 0, 0)       
+BLUE = (0, 0, 255)       
+PINK = (255, 105, 180)   
 
 # Tạo màn hình chơi game
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -40,20 +40,20 @@ def generate_maze(rows, cols):
 
     def carve_path(r, c):
         """Cắt đường đi trong mê cung"""
-        maze[r][c] = 0  # Đánh dấu ô (r, c) là đường đi
-        random.shuffle(directions)  # Xáo trộn các hướng để tạo sự ngẫu nhiên
+        maze[r][c] = 0  
+        random.shuffle(directions)  
 
         for dr, dc in directions:
-            nr, nc = r + dr * 2, c + dc * 2  # Kiểm tra 2 bước xa
-            if in_bounds(nr, nc) and maze[nr][nc] == 1:  # Nếu ô tiếp theo là tường
-                maze[r + dr][c + dc] = 0  # Tạo đường đi giữa các ô
+            nr, nc = r + dr * 2, c + dc * 2  
+            if in_bounds(nr, nc) and maze[nr][nc] == 1:  
+                maze[r + dr][c + dc] = 0 
                 carve_path(nr, nc)
 
     # Bắt đầu từ góc trên bên trái và tạo ra các đường đi
     carve_path(0, 0)
 
     # Thêm các đường mở ngẫu nhiên vào mê cung để có nhiều lối đi hơn
-    for _ in range(int(rows * cols * 0.3)):  # Tạo ra 30% ô mở ngẫu nhiên
+    for _ in range(int(rows * cols * 0.3)): 
         r, c = random.randint(0, rows - 1), random.randint(0, cols - 1)
         if maze[r][c] == 1 and (r, c) != (0, 0) and (r, c) != (rows - 1, cols - 1):
             maze[r][c] = 0
@@ -68,59 +68,58 @@ def bfs_path(maze, start, end):
     """
     Hàm tìm đường đi ngắn nhất trong mê cung bằng cách sử dụng tìm kiếm theo chiều rộng (BFS).
     """
-    rows, cols = len(maze), len(maze[0])  # Lấy số hàng và số cột của mê cung
-    queue = Queue()  # Tạo hàng đợi (queue) để xử lý BFS
-    queue.put((start, [start]))  # Thêm điểm bắt đầu vào hàng đợi
-    visited = set()  # Tập hợp các ô đã được thăm
+    rows, cols = len(maze), len(maze[0]) 
+    queue = Queue()  
+    queue.put((start, [start]))  
+    visited = set()  
 
     while not queue.empty():
-        (r, c), path = queue.get()  # Lấy ô hiện tại và đường đi đến ô đó
-        if (r, c) == end:  # Nếu ô hiện tại là ô kết thúc, trả về đường đi
+        (r, c), path = queue.get()  
+        if (r, c) == end: 
             return path
-        if (r, c) in visited:  # Nếu ô này đã được thăm, bỏ qua
+        if (r, c) in visited:  
             continue
-        visited.add((r, c))  # Đánh dấu ô này đã thăm
+        visited.add((r, c))  
 
-        # Thêm các ô láng giềng vào hàng đợi
+        
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] == 0 and (nr, nc) not in visited:
                 queue.put(((nr, nc), path + [(nr, nc)]))
 
-    return []  # Nếu không có đường đi, trả về danh sách rỗng
+    return []  
 
 def draw_maze(maze):
     """
     Hàm vẽ mê cung lên màn hình.
     """
-    for row in range(len(maze)):  # Duyệt qua từng hàng trong mê cung
-        for col in range(len(maze[0])):  # Duyệt qua từng cột trong mê cung
-            color = WHITE if maze[row][col] == 0 else BLACK  # Nếu ô là đường đi, vẽ màu trắng, nếu là tường, vẽ màu đen
+    for row in range(len(maze)):  
+        for col in range(len(maze[0])): 
+            color = WHITE if maze[row][col] == 0 else BLACK  
             pygame.draw.rect(screen, color, (col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE))
 
 def show_game_over(message):
     """
     Hàm hiển thị thông báo trò chơi kết thúc (Game Over hoặc You Win).
     """
-    font = pygame.font.Font(None, 74)  # Tạo đối tượng font với kích thước 74
-    text = font.render(message, True, RED if message == "Game Over" else GREEN)  # Tạo văn bản để hiển thị
-    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))  # Căn giữa văn bản
-    screen.blit(text, text_rect)  # Vẽ văn bản lên màn hình
+    font = pygame.font.Font(None, 74)  
+    text = font.render(message, True, RED if message == "Game Over" else GREEN)  
+    text_rect = text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))  
+    screen.blit(text, text_rect)  
 
 def main():
     while True:  # Vòng lặp vô hạn để khởi động lại game mỗi khi kết thúc
-        rows = SCREEN_HEIGHT // CELL_SIZE  # Số hàng của mê cung
-        cols = SCREEN_WIDTH // CELL_SIZE   # Số cột của mê cung
+        rows = SCREEN_HEIGHT // CELL_SIZE 
+        cols = SCREEN_WIDTH // CELL_SIZE   
 
         # Tạo mê cung
         maze = generate_maze(rows, cols)
 
         # Vị trí bắt đầu của người chơi (hình tròn hồng) và con quái vật (hình tròn xanh dương)
-        player_pos = [0, 0]  # Vị trí người chơi
-        monster_pos = [rows - 1, cols - 1]  # Vị trí con quái vật
+        player_pos = [0, 0]  
+        monster_pos = [rows - 1, cols - 1] 
 
-        # Di chuyển của người chơi (lên, xuống, trái, phải)
-        player_move = [0, 0]
+       
 
         # Tạo đường đi từ người chơi đến con quái vật (nếu có)
         start = tuple(player_pos)
@@ -130,13 +129,13 @@ def main():
         # Vật thể theo đường đi (con quái vật sẽ đi theo người chơi)
         running = True
         while running:
-            screen.fill(BLACK)  # Lấp đầy màn hình với màu đen
+            screen.fill(BLACK)  
 
             # Xử lý các sự kiện (như di chuyển của người chơi)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
-                    return  # Thoát khỏi game khi đóng cửa sổ
+                    return  
                 if event.type == pygame.KEYDOWN:
                     # Điều khiển người chơi di chuyển trong mê cung (chỉ khi không đụng tường)
                     if event.key == pygame.K_LEFT and player_pos[1] > 0 and maze[player_pos[0]][player_pos[1] - 1] == 0:
@@ -151,7 +150,7 @@ def main():
             # Tạo đường đi từ con quái vật đến người chơi
             path = bfs_path(maze, tuple(monster_pos), tuple(player_pos))
             if path:
-                monster_pos = list(path[1])  # Con quái vật di chuyển về phía người chơi
+                monster_pos = list(path[1]) 
 
             # Vẽ mê cung
             draw_maze(maze)
@@ -176,18 +175,17 @@ def main():
             if player_pos == monster_pos:
                 show_game_over("Game Over")
                 pygame.display.flip()
-                pygame.time.wait(3000)  # Đợi 3 giây trước khi khởi động lại game
-                break  # Thoát vòng lặp để khởi động lại game
-
+                pygame.time.wait(3000)  
+                break  
             # Kiểm tra nếu người chơi đã đến được mục tiêu (góc dưới bên phải)
             if player_pos == [rows - 1, cols - 1]:
                 show_game_over("You Win!")
                 pygame.display.flip()
-                pygame.time.wait(3000)  # Đợi 3 giây trước khi khởi động lại game
-                break  # Thoát vòng lặp để khởi động lại game
+                pygame.time.wait(3000)
+                break  
 
-            pygame.display.flip()  # Cập nhật màn hình
-            clock.tick(5)  # Điều chỉnh tốc độ của trò chơi (khung hình mỗi giây)
+            pygame.display.flip()  
+            clock.tick(5)  
 
 if __name__ == "__main__":
     main()
