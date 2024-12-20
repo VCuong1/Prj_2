@@ -57,7 +57,7 @@ def generate_maze(rows, cols):
         r, c = random.randint(0, rows - 1), random.randint(0, cols - 1)
         if maze[r][c] == 1 and (r, c) != (0, 0) and (r, c) != (rows - 1, cols - 1):
             maze[r][c] = 0
-
+            
     # Đảm bảo ô bắt đầu và ô kết thúc luôn là đường đi
     maze[0][0] = 0
     maze[rows - 1][cols - 1] = 0
@@ -81,13 +81,13 @@ def bfs_path(maze, start, end):
             continue
         visited.add((r, c))  
 
-        
         for dr, dc in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols and maze[nr][nc] == 0 and (nr, nc) not in visited:
                 queue.put(((nr, nc), path + [(nr, nc)]))
 
     return []  
+
 
 def draw_maze(maze):
     """
@@ -125,10 +125,12 @@ def main():
         start = tuple(player_pos)
         end = tuple(monster_pos)
         path = bfs_path(maze, start, end)
-
+        if path == []:
+            continue
         # Vật thể theo đường đi (con quái vật sẽ đi theo người chơi)
         running = True
         while running:
+            
             screen.fill(BLACK)  
 
             # Xử lý các sự kiện (như di chuyển của người chơi)
@@ -140,17 +142,23 @@ def main():
                     # Điều khiển người chơi di chuyển trong mê cung (chỉ khi không đụng tường)
                     if event.key == pygame.K_LEFT and player_pos[1] > 0 and maze[player_pos[0]][player_pos[1] - 1] == 0:
                         player_pos[1] -= 1
+                        
                     if event.key == pygame.K_RIGHT and player_pos[1] < cols - 1 and maze[player_pos[0]][player_pos[1] + 1] == 0:
                         player_pos[1] += 1
+                        
                     if event.key == pygame.K_UP and player_pos[0] > 0 and maze[player_pos[0] - 1][player_pos[1]] == 0:
                         player_pos[0] -= 1
+                        
                     if event.key == pygame.K_DOWN and player_pos[0] < rows - 1 and maze[player_pos[0] + 1][player_pos[1]] == 0:
                         player_pos[0] += 1
+                        
 
             # Tạo đường đi từ con quái vật đến người chơi
             path = bfs_path(maze, tuple(monster_pos), tuple(player_pos))
+            
             if path:
-                monster_pos = list(path[1]) 
+                monster_pos = list(path[1])
+                 
 
             # Vẽ mê cung
             draw_maze(maze)
@@ -174,12 +182,14 @@ def main():
             # Kiểm tra nếu con quái vật bắt được người chơi
             if player_pos == monster_pos:
                 show_game_over("Game Over")
+                monster_pos = [rows - 1, cols - 1]
                 pygame.display.flip()
                 pygame.time.wait(3000)  
                 break  
             # Kiểm tra nếu người chơi đã đến được mục tiêu (góc dưới bên phải)
             if player_pos == [rows - 1, cols - 1]:
                 show_game_over("You Win!")
+                monster_pos = [rows - 1, cols - 1]
                 pygame.display.flip()
                 pygame.time.wait(3000)
                 break  
